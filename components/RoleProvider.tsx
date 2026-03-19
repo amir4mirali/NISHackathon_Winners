@@ -1,44 +1,76 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
-import { User, UserRole, USERS } from "@/lib/shared";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { AuthUser, UserRole } from "@/lib/shared";
 
 type RoleContextValue = {
   role: UserRole;
-  currentUser: User;
-  setRole: (role: UserRole) => void;
+  currentUser: AuthUser | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 };
-
-const DEFAULT_ROLE: UserRole = "resident";
-const STORAGE_KEY = "alatau-role";
-
-const getDefaultUser = (role: UserRole) =>
-  USERS.find((user) => user.role === role) ?? USERS[0];
 
 const RoleContext = createContext<RoleContextValue | null>(null);
 
 export function RoleProvider({ children }: { children: React.ReactNode }) {
-  const [role, setRoleState] = useState<UserRole>(() => {
-    if (typeof window === "undefined") return DEFAULT_ROLE;
-    const stored = window.localStorage.getItem(STORAGE_KEY) as UserRole | null;
-    if (stored === "resident" || stored === "developer" || stored === "admin") {
-      return stored;
-    }
-    return DEFAULT_ROLE;
-  });
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const setRole = (nextRole: UserRole) => {
-    setRoleState(nextRole);
-    window.localStorage.setItem(STORAGE_KEY, nextRole);
-  };
+  const refreshSession = useCallback(async () => {
+    try {
+      const response = await fetch("/api/auth/me", { cache: "no-store" });
+      const payload = (await response.json()) as { user: AuthUser | null };
+      setCurrentUser(payload.user);
+    } catch {
+      setCurrentUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshSession();
+  }, [refreshSession]);
+
+  const login = useCallback(async (email: string, password: string) => {
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const payload = (await response.json()) as {
+      user?: AuthUser;
+      error?: string;
+    };
+
+    if (!response.ok || !payload.user) {
+      return { ok: false, error: payload.error ?? "Login failed" };
+    }
+
+    setCurrentUser(payload.user);
+    return { ok: true };
+  }, []);
+
+  const logout = useCallback(async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setCurrentUser(null);
+  }, []);
 
   const value = useMemo(
     () => ({
-      role,
-      currentUser: getDefaultUser(role),
-      setRole,
+      role: currentUser?.role ?? "resident",
+      currentUser,
+      isAuthenticated: Boolean(currentUser),
+      isLoading,
+      login,
+      logout,
+      refreshSession,
     }),
-    [role],
+    [currentUser, isLoading, login, logout, refreshSession],
   );
 
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;

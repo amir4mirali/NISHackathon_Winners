@@ -38,7 +38,7 @@ const projectTypes: ProjectType[] = ["residential", "school", "commercial"];
 const statuses: ProjectStatus[] = ["planned", "in progress", "completed"];
 
 export default function AdminDashboardPage() {
-  const { role } = useRole();
+  const { role, isAuthenticated, isLoading } = useRole();
   const [projects, setProjects] = useState<Project[]>([]);
   const [form, setForm] = useState<FormState>(defaultForm);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -134,9 +134,17 @@ export default function AdminDashboardPage() {
         </div>
       </header>
 
-      {role !== "admin" ? (
+      {isLoading ? (
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-700">
+          Checking session...
+        </div>
+      ) : !isAuthenticated ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
-          Switch role to Admin on the main page to use this panel.
+          Please login first, then open this panel.
+        </div>
+      ) : role !== "admin" ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+          Your account is not an admin account.
         </div>
       ) : (
         <>

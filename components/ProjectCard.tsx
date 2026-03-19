@@ -16,7 +16,7 @@ const statusBadgeClasses: Record<Project["status"], string> = {
 };
 
 export default function ProjectCard({ project }: ProjectCardProps) {
-  const { role } = useRole();
+  const { role, isAuthenticated } = useRole();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [draft, setDraft] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,6 +34,11 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       }
 
       const response = await fetch(`/api/complaints?projectId=${project.id}`);
+      if (!response.ok) {
+        setComplaints([]);
+        return;
+      }
+
       const data = (await response.json()) as Complaint[];
       setComplaints(data);
     };
@@ -108,7 +113,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
 
       <div className="space-y-3">
         <h3 className="text-sm font-semibold uppercase tracking-wide">Resident comments</h3>
-        {role === "resident" && (
+        {isAuthenticated && role === "resident" && (
           <form onSubmit={submitComplaint} className="space-y-2">
             <textarea
               value={draft}

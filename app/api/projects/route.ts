@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createProject, getProjects, Project } from "@/lib/data";
+import { getSessionFromRequest } from "@/lib/auth";
 
 export async function GET() {
   const projects = await getProjects();
@@ -7,6 +8,11 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const session = getSessionFromRequest(request);
+  if (!session || session.role !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = (await request.json()) as Omit<Project, "id" | "developerName">;
 
   if (!body.name || !body.district || !body.type || !body.status || !body.developerId) {

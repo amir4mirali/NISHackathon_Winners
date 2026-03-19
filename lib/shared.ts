@@ -29,6 +29,14 @@ export type User = {
   id: string;
   name: string;
   role: UserRole;
+  email?: string;
+};
+
+export type AuthUser = {
+  id: string;
+  name: string;
+  role: UserRole;
+  email: string;
 };
 
 export type Complaint = {
@@ -45,12 +53,12 @@ export const DISTRICTS: District[] = [
 ];
 
 export const DEVELOPERS: User[] = [
-  { id: "dev-1", name: "Alatau Build", role: "developer" },
-  { id: "dev-2", name: "Skyline Nova", role: "developer" },
+  { id: "dev-1", name: "Alatau Build", role: "developer", email: "developer1@alatau.local" },
+  { id: "dev-2", name: "Skyline Nova", role: "developer", email: "developer2@alatau.local" },
 ];
 
 export const USERS: User[] = [
-  { id: "resident-1", name: "Aruzhan", role: "resident" },
+  { id: "resident-1", name: "Aruzhan", role: "resident", email: "resident@alatau.local" },
   ...DEVELOPERS,
-  { id: "admin-1", name: "City Admin", role: "admin" },
+  { id: "admin-1", name: "City Admin", role: "admin", email: "admin@alatau.local" },
 ];

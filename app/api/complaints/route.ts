@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { addComplaint, getComplaints } from "@/lib/data";
+import { getSessionFromRequest } from "@/lib/auth";
 
 type ComplaintBody = {
   projectId?: string;
@@ -14,6 +15,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const session = getSessionFromRequest(request);
+  if (!session || session.role !== "resident") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = (await request.json()) as ComplaintBody;
   if (!body.projectId || !body.text) {
     return NextResponse.json({ error: "projectId and text are required" }, { status: 400 });

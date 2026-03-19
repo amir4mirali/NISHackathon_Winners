@@ -1,4 +1,5 @@
 ﻿import { getMongoDb } from "@/lib/mongodb";
+import { createHash, timingSafeEqual } from "crypto";
 
 export type District =
   | "Green District"
@@ -31,6 +32,14 @@ export type User = {
   id: string;
   name: string;
   role: UserRole;
+  email?: string;
+};
+
+export type AuthUser = {
+  id: string;
+  name: string;
+  role: UserRole;
+  email: string;
 };
 
 export type Complaint = {
@@ -52,9 +61,40 @@ export const DEVELOPERS: User[] = [
 ];
 
 export const USERS: User[] = [
-  { id: "resident-1", name: "Aruzhan", role: "resident" },
+  { id: "resident-1", name: "Aruzhan", role: "resident", email: "resident@alatau.local" },
   ...DEVELOPERS,
-  { id: "admin-1", name: "City Admin", role: "admin" },
+  { id: "admin-1", name: "City Admin", role: "admin", email: "admin@alatau.local" },
+];
+
+const seedAuthUsers: Array<AuthUser & { passwordHash: string }> = [
+  {
+    id: "resident-1",
+    name: "Aruzhan",
+    role: "resident",
+    email: "resident@alatau.local",
+    passwordHash: hashPassword("resident123"),
+  },
+  {
+    id: "dev-1",
+    name: "Alatau Build",
+    role: "developer",
+    email: "developer1@alatau.local",
+    passwordHash: hashPassword("developer123"),
+  },
+  {
+    id: "dev-2",
+    name: "Skyline Nova",
+    role: "developer",
+    email: "developer2@alatau.local",
+    passwordHash: hashPassword("developer123"),
+  },
+  {
+    id: "admin-1",
+    name: "City Admin",
+    role: "admin",
+    email: "admin@alatau.local",
+    passwordHash: hashPassword("admin123"),
+  },
 ];
 
 const seedProjects: Project[] = [
@@ -125,6 +165,18 @@ const seedComplaints: Complaint[] = [
 
 type ProjectDocument = Project & { createdAt: Date };
 type ComplaintDocument = Complaint & { createdAt: Date };
+type AuthUserDocument = AuthUser & { passwordHash: string; createdAt: Date };
+
+function hashPassword(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function secureEqual(a: string, b: string): boolean {
+  const left = Buffer.from(a);
+  const right = Buffer.from(b);
+  if (left.length !== right.length) return false;
+  return timingSafeEqual(left, right);
+}
 
 const toProject = (doc: ProjectDocument): Project => ({
   id: doc.id,
@@ -144,11 +196,21 @@ const toComplaint = (doc: ComplaintDocument): Complaint => ({
   text: doc.text,
 });
 
+const toAuthUser = (doc: AuthUserDocument): AuthUser => ({
+  id: doc.id,
+  name: doc.name,
+  role: doc.role,
+  email: doc.email,
+});
+
 let projects: Project[] = [...seedProjects];
 let complaints: Complaint[] = [...seedComplaints];
+const authUsers: Array<AuthUser & { passwordHash: string }> = [...seedAuthUsers];
 let mongoPrepared = false;
 
 const nextId = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 8)}`;
+
+const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
 async function prepareMongoIfNeeded() {
   if (mongoPrepared) return;
@@ -158,9 +220,12 @@ async function prepareMongoIfNeeded() {
 
   const projectsCol = db.collection<ProjectDocument>("projects");
   const complaintsCol = db.collection<ComplaintDocument>("complaints");
+  const usersCol = db.collection<AuthUserDocument>("users");
 
   await projectsCol.createIndex({ id: 1 }, { unique: true });
   await complaintsCol.createIndex({ id: 1 }, { unique: true });
+  await usersCol.createIndex({ id: 1 }, { unique: true });
+  await usersCol.createIndex({ email: 1 }, { unique: true });
 
   const projectCount = await projectsCol.countDocuments();
   if (projectCount === 0) {
@@ -178,6 +243,16 @@ async function prepareMongoIfNeeded() {
       seedComplaints.map((complaint, index) => ({
         ...complaint,
         createdAt: new Date(Date.now() - (seedComplaints.length - index) * 1000),
+      })),
+    );
+  }
+
+  const userCount = await usersCol.countDocuments();
+  if (userCount === 0) {
+    await usersCol.insertMany(
+      seedAuthUsers.map((user, index) => ({
+        ...user,
+        createdAt: new Date(Date.now() - (seedAuthUsers.length - index) * 1000),
       })),
     );
   }
@@ -335,4 +410,111 @@ export async function addComplaint(projectId: string, text: string): Promise<Com
   });
 
   return complaint;
+}
+
+export async function authenticateUser(email: string, password: string): Promise<AuthUser | null> {
+  const normalizedEmail = normalizeEmail(email);
+  const passwordHash = hashPassword(password);
+
+  const db = await getMongoDb();
+  if (!db) {
+    const user = authUsers.find((entry) => entry.email.toLowerCase() === normalizedEmail);
+    if (!user) return null;
+    if (!secureEqual(user.passwordHash, passwordHash)) return null;
+    return {
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      email: user.email,
+    };
+  }
+
+  await prepareMongoIfNeeded();
+  const doc = await db.collection<AuthUserDocument>("users").findOne({
+    email: normalizedEmail,
+  });
+
+  if (!doc) return null;
+  if (!secureEqual(doc.passwordHash, passwordHash)) return null;
+
+  return toAuthUser(doc);
+}
+
+export async function registerResident(
+  name: string,
+  email: string,
+  password: string,
+): Promise<{ user: AuthUser | null; error?: string }> {
+  const normalizedName = name.trim();
+  const normalizedEmail = normalizeEmail(email);
+
+  if (!normalizedName) {
+    return { user: null, error: "Name is required" };
+  }
+
+  if (!normalizedEmail || !normalizedEmail.includes("@")) {
+    return { user: null, error: "Valid email is required" };
+  }
+
+  if (password.length < 6) {
+    return { user: null, error: "Password must be at least 6 characters" };
+  }
+
+  const db = await getMongoDb();
+  if (!db) {
+    const exists = authUsers.some((entry) => entry.email.toLowerCase() === normalizedEmail);
+    if (exists) {
+      return { user: null, error: "User with this email already exists" };
+    }
+
+    const newUser: AuthUser & { passwordHash: string } = {
+      id: nextId("resident"),
+      name: normalizedName,
+      role: "resident",
+      email: normalizedEmail,
+      passwordHash: hashPassword(password),
+    };
+
+    authUsers.push(newUser);
+    return { user: { id: newUser.id, name: newUser.name, role: newUser.role, email: newUser.email } };
+  }
+
+  await prepareMongoIfNeeded();
+  const usersCol = db.collection<AuthUserDocument>("users");
+  const exists = await usersCol.findOne({ email: normalizedEmail }, { projection: { _id: 1 } });
+  if (exists) {
+    return { user: null, error: "User with this email already exists" };
+  }
+
+  const newUser: AuthUserDocument = {
+    id: nextId("resident"),
+    name: normalizedName,
+    role: "resident",
+    email: normalizedEmail,
+    passwordHash: hashPassword(password),
+    createdAt: new Date(),
+  };
+
+  await usersCol.insertOne(newUser);
+  return { user: toAuthUser(newUser) };
+}
+
+export async function getAuthUserById(id: string): Promise<AuthUser | null> {
+  const db = await getMongoDb();
+  if (!db) {
+    const user = authUsers.find((entry) => entry.id === id);
+    if (!user) return null;
+    return {
+      id: user.id,
+      name: user.name,
+      role: user.role,
+      email: user.email,
+    };
+  }
+
+  await prepareMongoIfNeeded();
+  const doc = await db.collection<AuthUserDocument>("users").findOne({ id });
+  if (!doc) return null;
+
+  return toAuthUser(doc);
 }

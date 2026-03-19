@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
 import AlatauDistrictShowcase from "@/components/AlatauDistrictShowcase";
+import { useRole } from "@/components/RoleProvider";
 
 export default function Home() {
+  const { role, isAuthenticated } = useRole();
+
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6 md:px-8">
       <section className="relative overflow-hidden rounded-3xl border border-white/70 bg-white/85 p-6 shadow-xl md:p-10">
@@ -24,24 +29,44 @@ export default function Home() {
             </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
+              {!isAuthenticated ? (
+                <>
+                  <Link
+                    href="/login"
+                    className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                  >
+                    Register
+                  </Link>
+                </>
+              ) : null}
               <Link
                 href="/platform"
                 className="rounded-xl bg-[color:var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95"
               >
                 Перейти к карте и деталям
               </Link>
-              <Link
-                href="/dashboard/admin"
-                className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
-              >
-                Admin Panel
-              </Link>
-              <Link
-                href="/dashboard/developer"
-                className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
-              >
-                Developer Panel
-              </Link>
+              {isAuthenticated && role === "admin" && (
+                <Link
+                  href="/dashboard/admin"
+                  className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                >
+                  Admin Panel
+                </Link>
+              )}
+              {isAuthenticated && role === "developer" && (
+                <Link
+                  href="/dashboard/developer"
+                  className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+                >
+                  Developer Panel
+                </Link>
+              )}
             </div>
           </div>
 

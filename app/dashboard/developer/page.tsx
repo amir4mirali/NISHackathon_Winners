@@ -8,7 +8,7 @@ import { Project, ProjectStatus } from "@/lib/shared";
 const statuses: ProjectStatus[] = ["planned", "in progress", "completed"];
 
 export default function DeveloperDashboardPage() {
-  const { role, currentUser } = useRole();
+  const { role, currentUser, isAuthenticated, isLoading } = useRole();
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
@@ -27,8 +27,8 @@ export default function DeveloperDashboardPage() {
   }, []);
 
   const assignedProjects = useMemo(
-    () => projects.filter((project) => project.developerId === currentUser.id),
-    [projects, currentUser.id],
+    () => projects.filter((project) => project.developerId === currentUser?.id),
+    [projects, currentUser?.id],
   );
 
   const updateStatus = async (projectId: string, status: ProjectStatus) => {
@@ -50,7 +50,9 @@ export default function DeveloperDashboardPage() {
           <div>
             <h1 className="text-2xl font-bold">Developer Panel</h1>
             <p className="text-sm text-[color:var(--muted)]">
-              Logged in as {currentUser.name}. Manage only your assigned projects.
+              {currentUser
+                ? `Logged in as ${currentUser.name}. Manage only your assigned projects.`
+                : "Login as a developer to manage your projects."}
             </p>
           </div>
           <Link href="/platform" className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white">
@@ -59,9 +61,17 @@ export default function DeveloperDashboardPage() {
         </div>
       </header>
 
-      {role !== "developer" ? (
+      {isLoading ? (
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-700">
+          Checking session...
+        </div>
+      ) : !isAuthenticated ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
-          Switch role to Developer on the main page to use this panel.
+          Please login first, then open this panel.
+        </div>
+      ) : role !== "developer" ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+          Your account is not a developer account.
         </div>
       ) : (
         <section className="space-y-3">
