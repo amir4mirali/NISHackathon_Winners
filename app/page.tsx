@@ -1,65 +1,67 @@
-import Image from "next/image";
+import Link from "next/link";
+import AlatauDistrictShowcase from "@/components/AlatauDistrictShowcase";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6 md:px-8">
+      <section className="relative overflow-hidden rounded-3xl border border-white/70 bg-white/85 p-6 shadow-xl md:p-10">
+        <div className="pointer-events-none absolute -left-20 -top-20 h-72 w-72 rounded-full bg-[#ccecd6] blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -right-20 h-72 w-72 rounded-full bg-[#efe7c8] blur-3xl" />
+
+        <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-[1.25fr_1fr] lg:items-center">
+          <div>
+            <p className="mb-3 inline-flex rounded-full bg-[color:var(--accent-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[color:var(--accent)]">
+              Hackathon MVP
+            </p>
+            <h1 className="text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+              Alatau City
+              <br />
+              Transparency Platform
+            </h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-[color:var(--muted)] md:text-lg">
+              Добро пожаловать. Здесь жители, девелоперы и администрация видят строительство по дистриктам,
+              статусы объектов и AI-рекомендации по развитию территорий Алатау.
+            </p>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href="/platform"
+                className="rounded-xl bg-[color:var(--accent)] px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95"
+              >
+                Перейти к карте и деталям
+              </Link>
+              <Link
+                href="/dashboard/admin"
+                className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+              >
+                Admin Panel
+              </Link>
+              <Link
+                href="/dashboard/developer"
+                className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
+              >
+                Developer Panel
+              </Link>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/60 bg-white/90 p-5 shadow-lg">
+            <h2 className="text-xl font-semibold">Что внутри</h2>
+            <ul className="mt-4 space-y-3 text-sm text-[color:var(--foreground)]/80">
+              <li className="rounded-lg bg-slate-50 px-3 py-2">Карта дистриктов и объекты строительства</li>
+              <li className="rounded-lg bg-slate-50 px-3 py-2">Карточка объекта + AI анализ</li>
+              <li className="rounded-lg bg-slate-50 px-3 py-2">Роли: Resident / Developer / Admin</li>
+              <li className="rounded-lg bg-slate-50 px-3 py-2">Комментарии жителей и управление проектами</li>
+            </ul>
+
+            <p className="mt-4 text-xs text-[color:var(--muted)]">
+              Для карты используется чистая светлая подложка и логика по четырем дистриктам Alatau.
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+
+      <AlatauDistrictShowcase />
+    </main>
   );
 }
