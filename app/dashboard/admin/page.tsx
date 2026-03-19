@@ -10,7 +10,7 @@ import {
   Project,
   ProjectStatus,
   ProjectType,
-} from "@/lib/data";
+} from "@/lib/shared";
 
 type FormState = {
   name: string;

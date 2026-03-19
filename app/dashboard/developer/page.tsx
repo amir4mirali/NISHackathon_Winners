@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useRole } from "@/components/RoleProvider";
-import { Project, ProjectStatus } from "@/lib/data";
+import { Project, ProjectStatus } from "@/lib/shared";
 
 const statuses: ProjectStatus[] = ["planned", "in progress", "completed"];
 

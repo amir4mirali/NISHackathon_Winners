@@ -9,7 +9,8 @@ type ComplaintBody = {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const projectId = searchParams.get("projectId") ?? undefined;
-  return NextResponse.json(getComplaints(projectId));
+  const complaints = await getComplaints(projectId);
+  return NextResponse.json(complaints);
 }
 
 export async function POST(request: Request) {
@@ -18,6 +19,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "projectId and text are required" }, { status: 400 });
   }
 
-  const complaint = addComplaint(body.projectId, body.text);
+  const complaint = await addComplaint(body.projectId, body.text);
   return NextResponse.json(complaint, { status: 201 });
 }

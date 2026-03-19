@@ -1,3 +1,5 @@
+﻿import { getMongoDb } from "@/lib/mongodb";
+
 export type District =
   | "Green District"
   | "Growing District"
@@ -55,7 +57,7 @@ export const USERS: User[] = [
   { id: "admin-1", name: "City Admin", role: "admin" },
 ];
 
-let projects: Project[] = [
+const seedProjects: Project[] = [
   {
     id: "p-1",
     name: "Green Villas",
@@ -113,7 +115,7 @@ let projects: Project[] = [
   },
 ];
 
-let complaints: Complaint[] = [
+const seedComplaints: Complaint[] = [
   {
     id: "c-1",
     projectId: "p-2",
@@ -121,40 +123,151 @@ let complaints: Complaint[] = [
   },
 ];
 
+type ProjectDocument = Project & { createdAt: Date };
+type ComplaintDocument = Complaint & { createdAt: Date };
+
+const toProject = (doc: ProjectDocument): Project => ({
+  id: doc.id,
+  name: doc.name,
+  district: doc.district,
+  type: doc.type,
+  status: doc.status,
+  developerId: doc.developerId,
+  developerName: doc.developerName,
+  description: doc.description,
+  coordinates: doc.coordinates,
+});
+
+const toComplaint = (doc: ComplaintDocument): Complaint => ({
+  id: doc.id,
+  projectId: doc.projectId,
+  text: doc.text,
+});
+
+let projects: Project[] = [...seedProjects];
+let complaints: Complaint[] = [...seedComplaints];
+let mongoPrepared = false;
+
 const nextId = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 8)}`;
 
-export function getProjects(): Project[] {
-  return projects;
+async function prepareMongoIfNeeded() {
+  if (mongoPrepared) return;
+
+  const db = await getMongoDb();
+  if (!db) return;
+
+  const projectsCol = db.collection<ProjectDocument>("projects");
+  const complaintsCol = db.collection<ComplaintDocument>("complaints");
+
+  await projectsCol.createIndex({ id: 1 }, { unique: true });
+  await complaintsCol.createIndex({ id: 1 }, { unique: true });
+
+  const projectCount = await projectsCol.countDocuments();
+  if (projectCount === 0) {
+    await projectsCol.insertMany(
+      seedProjects.map((project, index) => ({
+        ...project,
+        createdAt: new Date(Date.now() - (seedProjects.length - index) * 1000),
+      })),
+    );
+  }
+
+  const complaintCount = await complaintsCol.countDocuments();
+  if (complaintCount === 0) {
+    await complaintsCol.insertMany(
+      seedComplaints.map((complaint, index) => ({
+        ...complaint,
+        createdAt: new Date(Date.now() - (seedComplaints.length - index) * 1000),
+      })),
+    );
+  }
+
+  mongoPrepared = true;
 }
 
-export function getProjectById(id: string): Project | undefined {
-  return projects.find((project) => project.id === id);
+export async function getProjects(): Promise<Project[]> {
+  const db = await getMongoDb();
+  if (!db) return projects;
+
+  await prepareMongoIfNeeded();
+  const docs = await db
+    .collection<ProjectDocument>("projects")
+    .find({}, { projection: { _id: 0 } })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  return docs.map(toProject);
 }
 
-export function createProject(
-  input: Omit<Project, "id" | "developerName">,
-): Project {
-  const dev = DEVELOPERS.find((developer) => developer.id === input.developerId);
+export async function getProjectById(id: string): Promise<Project | undefined> {
+  const db = await getMongoDb();
+  if (!db) return projects.find((project) => project.id === id);
+
+  await prepareMongoIfNeeded();
+  const doc = await db
+    .collection<ProjectDocument>("projects")
+    .findOne({ id }, { projection: { _id: 0 } });
+
+  if (!doc) return undefined;
+
+  return toProject(doc);
+}
+
+export async function createProject(input: Omit<Project, "id" | "developerName">): Promise<Project> {
+  const developer = DEVELOPERS.find((dev) => dev.id === input.developerId);
   const project: Project = {
     ...input,
     id: nextId("p"),
-    developerName: dev?.name ?? "Unknown Developer",
+    developerName: developer?.name ?? "Unknown Developer",
   };
-  projects = [project, ...projects];
+
+  const db = await getMongoDb();
+  if (!db) {
+    projects = [project, ...projects];
+    return project;
+  }
+
+  await prepareMongoIfNeeded();
+  await db.collection<ProjectDocument>("projects").insertOne({
+    ...project,
+    createdAt: new Date(),
+  });
+
   return project;
 }
 
-export function updateProject(
+export async function updateProject(
   id: string,
   changes: Partial<Omit<Project, "id">>,
-): Project | null {
-  const existing = getProjectById(id);
-  if (!existing) return null;
+): Promise<Project | null> {
+  const db = await getMongoDb();
+  if (!db) {
+    const existing = projects.find((project) => project.id === id);
+    if (!existing) return null;
 
+    const nextDeveloperId = changes.developerId ?? existing.developerId;
+    const nextDeveloperName =
+      DEVELOPERS.find((dev) => dev.id === nextDeveloperId)?.name ?? existing.developerName;
+
+    const updated: Project = {
+      ...existing,
+      ...changes,
+      developerId: nextDeveloperId,
+      developerName: nextDeveloperName,
+    };
+
+    projects = projects.map((project) => (project.id === id ? updated : project));
+    return updated;
+  }
+
+  await prepareMongoIfNeeded();
+  const existingDoc = await db.collection<ProjectDocument>("projects").findOne({ id });
+  if (!existingDoc) return null;
+
+  const existing = toProject(existingDoc);
   const nextDeveloperId = changes.developerId ?? existing.developerId;
   const nextDeveloperName =
-    DEVELOPERS.find((developer) => developer.id === nextDeveloperId)?.name ??
-    existing.developerName;
+    DEVELOPERS.find((dev) => dev.id === nextDeveloperId)?.name ?? existing.developerName;
 
   const updated: Project = {
     ...existing,
@@ -163,28 +276,63 @@ export function updateProject(
     developerName: nextDeveloperName,
   };
 
-  projects = projects.map((project) => (project.id === id ? updated : project));
+  await db.collection<ProjectDocument>("projects").updateOne({ id }, { $set: updated });
   return updated;
 }
 
-export function deleteProject(id: string): boolean {
-  const before = projects.length;
-  projects = projects.filter((project) => project.id !== id);
-  complaints = complaints.filter((complaint) => complaint.projectId !== id);
-  return before !== projects.length;
+export async function deleteProject(id: string): Promise<boolean> {
+  const db = await getMongoDb();
+  if (!db) {
+    const before = projects.length;
+    projects = projects.filter((project) => project.id !== id);
+    complaints = complaints.filter((complaint) => complaint.projectId !== id);
+    return before !== projects.length;
+  }
+
+  await prepareMongoIfNeeded();
+  const result = await db.collection<ProjectDocument>("projects").deleteOne({ id });
+  if (result.deletedCount === 0) return false;
+
+  await db.collection<ComplaintDocument>("complaints").deleteMany({ projectId: id });
+  return true;
 }
 
-export function getComplaints(projectId?: string): Complaint[] {
-  if (!projectId) return complaints;
-  return complaints.filter((complaint) => complaint.projectId === projectId);
+export async function getComplaints(projectId?: string): Promise<Complaint[]> {
+  const db = await getMongoDb();
+  if (!db) {
+    if (!projectId) return complaints;
+    return complaints.filter((complaint) => complaint.projectId === projectId);
+  }
+
+  await prepareMongoIfNeeded();
+  const query = projectId ? { projectId } : {};
+  const docs = await db
+    .collection<ComplaintDocument>("complaints")
+    .find(query, { projection: { _id: 0 } })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  return docs.map(toComplaint);
 }
 
-export function addComplaint(projectId: string, text: string): Complaint {
+export async function addComplaint(projectId: string, text: string): Promise<Complaint> {
   const complaint: Complaint = {
     id: nextId("c"),
     projectId,
     text,
   };
-  complaints = [complaint, ...complaints];
+
+  const db = await getMongoDb();
+  if (!db) {
+    complaints = [complaint, ...complaints];
+    return complaint;
+  }
+
+  await prepareMongoIfNeeded();
+  await db.collection<ComplaintDocument>("complaints").insertOne({
+    ...complaint,
+    createdAt: new Date(),
+  });
+
   return complaint;
 }

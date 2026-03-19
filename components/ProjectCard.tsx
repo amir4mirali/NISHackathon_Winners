@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { analyzeDistrict } from "@/lib/ai";
-import { Complaint, Project } from "@/lib/data";
+import { Complaint, Project } from "@/lib/shared";
 import { useRole } from "@/components/RoleProvider";
 
 type ProjectCardProps = {

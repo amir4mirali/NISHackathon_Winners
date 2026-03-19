@@ -1,4 +1,4 @@
-import { District, ProjectType } from "@/lib/data";
+import { District, ProjectType } from "@/lib/shared";
 
 export type ResidentRequestType = "house" | "residential complex";
 

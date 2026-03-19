@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { createProject, getProjects, Project } from "@/lib/data";
 
 export async function GET() {
-  return NextResponse.json(getProjects());
+  const projects = await getProjects();
+  return NextResponse.json(projects);
 }
 
 export async function POST(request: Request) {
@@ -12,6 +13,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const project = createProject(body);
+  const project = await createProject(body);
   return NextResponse.json(project, { status: 201 });
 }

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import AIBox from "@/components/AIBox";
 import ProjectCard from "@/components/ProjectCard";
 import { useRole } from "@/components/RoleProvider";
-import { Project, UserRole } from "@/lib/data";
+import { Project, UserRole } from "@/lib/shared";
 
 const Map = dynamic(() => import("@/components/Map"), {
   ssr: false,

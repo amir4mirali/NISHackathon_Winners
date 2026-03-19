@@ -2,7 +2,7 @@
 
 import { Circle, CircleMarker, MapContainer, TileLayer, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { Project } from "@/lib/data";
+import { Project } from "@/lib/shared";
 
 type MapProps = {
   projects: Project[];

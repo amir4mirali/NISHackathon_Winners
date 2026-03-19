@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { analyzeDistrict, ResidentRequestType } from "@/lib/ai";
-import { District, DISTRICTS } from "@/lib/data";
+import { District, DISTRICTS } from "@/lib/shared";
 
 export default function AIBox() {
   const [district, setDistrict] = useState<District>("Green District");

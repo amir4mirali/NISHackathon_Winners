@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState } from "react";
-import { User, UserRole, USERS } from "@/lib/data";
+import { User, UserRole, USERS } from "@/lib/shared";
 
 type RoleContextValue = {
   role: UserRole;
