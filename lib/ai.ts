@@ -1,4 +1,4 @@
-import { District, Project, ProjectType } from "@/lib/shared";
+import { Complaint, District, Project, ProjectType } from "@/lib/shared";
 
 export type ResidentRequestType = "house" | "residential complex";
 
@@ -20,6 +20,18 @@ export type ResidentProfile = {
 export type DistrictRecommendation = {
   district: District;
   score: number;
+  reasons: string[];
+};
+
+export type ContractorRecommendation = {
+  developerId: string;
+  developerName: string;
+  score: number;
+  matchedCompleted: number;
+  matchedTotal: number;
+  totalProjects: number;
+  totalComplaints: number;
+  complaintRate: number;
   reasons: string[];
 };
 
@@ -259,4 +271,94 @@ export function analyzeDistrict(
     recommendation,
     explanation: reasons.join("; ") || "Общий потенциал района нейтральный.",
   };
+}
+
+export function recommendContractorsForProject(
+  projects: Project[],
+  complaints: Complaint[],
+  targetType: ProjectType,
+  targetDistrict?: District,
+): ContractorRecommendation[] {
+  const complaintsByProject = new Map<string, number>();
+  for (const complaint of complaints) {
+    complaintsByProject.set(complaint.projectId, (complaintsByProject.get(complaint.projectId) ?? 0) + 1);
+  }
+
+  const byDeveloper = new Map<string, Project[]>();
+  for (const project of projects) {
+    const list = byDeveloper.get(project.developerId) ?? [];
+    list.push(project);
+    byDeveloper.set(project.developerId, list);
+  }
+
+  const recommendations: ContractorRecommendation[] = [];
+
+  for (const [developerId, developerProjects] of byDeveloper) {
+    const developerName = developerProjects[0]?.developerName ?? "Unknown";
+    const totalProjects = developerProjects.length;
+
+    const matchedProjects = developerProjects.filter((project) => {
+      if (project.type !== targetType) return false;
+      if (targetDistrict && project.district !== targetDistrict) return false;
+      return true;
+    });
+
+    const matchedCompleted = matchedProjects.filter((project) => project.status === "completed").length;
+    const matchedInProgress = matchedProjects.filter((project) => project.status === "in progress").length;
+    const matchedPlanned = matchedProjects.filter((project) => project.status === "planned").length;
+    const completedTotal = developerProjects.filter((project) => project.status === "completed").length;
+
+    let totalComplaints = 0;
+    let matchedComplaints = 0;
+    for (const project of developerProjects) {
+      const count = complaintsByProject.get(project.id) ?? 0;
+      totalComplaints += count;
+      if (project.type === targetType) {
+        matchedComplaints += count;
+      }
+    }
+
+    const complaintRate = totalProjects === 0 ? 0 : totalComplaints / totalProjects;
+
+    // Score prioritizes relevant experience and successful completions,
+    // then penalizes complaint load to avoid risky contractors.
+    let score = 25;
+    score += matchedCompleted * 20;
+    score += matchedInProgress * 9;
+    score += matchedPlanned * 4;
+    score += completedTotal * 3;
+    score -= complaintRate * 22;
+    score -= matchedComplaints * 6;
+
+    const reasons: string[] = [];
+    if (matchedCompleted > 0) {
+      reasons.push(`завершено похожих проектов: ${matchedCompleted}`);
+    } else if (matchedProjects.length > 0) {
+      reasons.push("есть релевантные проекты, но без завершенных кейсов");
+    } else {
+      reasons.push("релевантного опыта по текущему типу проекта почти нет");
+    }
+
+    if (complaintRate <= 0.5) {
+      reasons.push("низкая плотность жалоб по прошлым проектам");
+    } else if (complaintRate <= 1.5) {
+      reasons.push("умеренный уровень жалоб, нужен дополнительный контроль");
+    } else {
+      reasons.push("высокая плотность жалоб, повышенный риск");
+    }
+
+    recommendations.push({
+      developerId,
+      developerName,
+      score: Math.max(1, Math.min(100, Math.round(score))),
+      matchedCompleted,
+      matchedTotal: matchedProjects.length,
+      totalProjects,
+      totalComplaints,
+      complaintRate: Number(complaintRate.toFixed(2)),
+      reasons,
+    });
+  }
+
+  return recommendations.sort((a, b) => b.score - a.score);
 }

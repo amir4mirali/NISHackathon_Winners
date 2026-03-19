@@ -77,7 +77,99 @@ type ProjectMarker = {
   x: number;
   y: number;
   status: Project["status"];
+  modelKind: "school" | "highrise" | "house" | "mall" | "business";
 };
+
+function inferModelKind(project: Project): ProjectMarker["modelKind"] {
+  const text = `${project.name} ${project.description}`.toLowerCase();
+
+  if (project.type === "school" || text.includes("school") || text.includes("школ")) {
+    return "school";
+  }
+
+  if (
+    text.includes("mall") ||
+    text.includes("retail") ||
+    text.includes("торгов") ||
+    text.includes("тц") ||
+    text.includes("quarter")
+  ) {
+    return "mall";
+  }
+
+  if (
+    text.includes("villa") ||
+    text.includes("villas") ||
+    text.includes("house") ||
+    text.includes("коттедж") ||
+    text.includes("private")
+  ) {
+    return "house";
+  }
+
+  if (project.type === "residential") {
+    return "highrise";
+  }
+
+  return "business";
+}
+
+function renderModelIcon(kind: ProjectMarker["modelKind"], color: string) {
+  if (kind === "school") {
+    return (
+      <g>
+        <path d="M-9 -1 L0 -6 L9 -1 L0 4 Z" fill={color} />
+        <rect x="-6.5" y="4" width="13" height="8" rx="1.8" fill={color} />
+        <rect x="-1.6" y="6" width="3.2" height="6" fill="#ffffff" opacity="0.85" />
+      </g>
+    );
+  }
+
+  if (kind === "house") {
+    return (
+      <g>
+        <path d="M-8 1 L0 -6 L8 1 Z" fill={color} />
+        <rect x="-6.5" y="1" width="13" height="10" rx="2" fill={color} />
+        <rect x="-1.6" y="5" width="3.2" height="6" fill="#ffffff" opacity="0.85" />
+      </g>
+    );
+  }
+
+  if (kind === "mall") {
+    return (
+      <g>
+        <rect x="-9" y="-3" width="18" height="14" rx="2.5" fill={color} />
+        <rect x="-6.5" y="0" width="3.2" height="3.2" fill="#ffffff" opacity="0.9" />
+        <rect x="-1.6" y="0" width="3.2" height="3.2" fill="#ffffff" opacity="0.9" />
+        <rect x="3.3" y="0" width="3.2" height="3.2" fill="#ffffff" opacity="0.9" />
+        <rect x="-1.8" y="5.3" width="3.6" height="5.7" fill="#ffffff" opacity="0.85" />
+      </g>
+    );
+  }
+
+  if (kind === "highrise") {
+    return (
+      <g>
+        <rect x="-7.5" y="-6" width="6.5" height="17" rx="1.5" fill={color} />
+        <rect x="1" y="-3" width="6.5" height="14" rx="1.5" fill={color} />
+        <rect x="-6" y="-3.5" width="2.1" height="2" fill="#ffffff" opacity="0.9" />
+        <rect x="-6" y="0" width="2.1" height="2" fill="#ffffff" opacity="0.9" />
+        <rect x="3" y="-1" width="2.1" height="2" fill="#ffffff" opacity="0.9" />
+        <rect x="3" y="2.5" width="2.1" height="2" fill="#ffffff" opacity="0.9" />
+      </g>
+    );
+  }
+
+  return (
+    <g>
+      <rect x="-9" y="-4" width="18" height="15" rx="2.2" fill={color} />
+      <rect x="-5.8" y="-1" width="3" height="3" fill="#ffffff" opacity="0.9" />
+      <rect x="-1.3" y="-1" width="3" height="3" fill="#ffffff" opacity="0.9" />
+      <rect x="3.2" y="-1" width="3" height="3" fill="#ffffff" opacity="0.9" />
+      <rect x="-1.5" y="4.5" width="3" height="6.5" fill="#ffffff" opacity="0.85" />
+    </g>
+  );
+}
 
 export default function Map({ projects, selectedProjectId, onSelectProject }: MapProps) {
   const [zoom, setZoom] = useState(1);
@@ -109,6 +201,7 @@ export default function Map({ projects, selectedProjectId, onSelectProject }: Ma
         x: anchor.x + offset.x + ringOffset,
         y: anchor.y + offset.y - ringOffset,
         status: project.status,
+        modelKind: inferModelKind(project),
       };
     });
   }, [projects]);
@@ -288,9 +381,11 @@ export default function Map({ projects, selectedProjectId, onSelectProject }: Ma
               }}
               className="cursor-pointer"
             >
-              {isActive && <circle cx={marker.x} cy={marker.y} r={15} fill="none" stroke="#0f172a" strokeWidth={2.2} />}
-              <circle cx={marker.x} cy={marker.y} r={11} fill={color} fillOpacity={0.92} stroke="#ffffff" strokeWidth={2.6} />
-              <circle cx={marker.x} cy={marker.y} r={4.8} fill="#f8fafc" />
+              <circle cx={marker.x} cy={marker.y} r={12} fill="#ffffff" fillOpacity={0.95} stroke={color} strokeWidth={2.4} />
+              {isActive && <circle cx={marker.x} cy={marker.y} r={16} fill="none" stroke="#0f172a" strokeWidth={1.9} />}
+              <g transform={`translate(${marker.x}, ${marker.y}) scale(0.75)`}>
+                {renderModelIcon(marker.modelKind, color)}
+              </g>
               {isActive && (
                 <text
                   x={marker.x}

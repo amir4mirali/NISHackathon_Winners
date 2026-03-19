@@ -39,23 +39,41 @@ export default function ProjectCard({ project }: ProjectCardProps) {
   }, [project]);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchComplaints = async () => {
       if (!project) {
         setComplaints([]);
         return;
       }
 
-      const response = await fetch(`/api/complaints?projectId=${project.id}`);
-      if (!response.ok) {
-        setComplaints([]);
-        return;
-      }
+      try {
+        const response = await fetch(`/api/complaints?projectId=${project.id}`, {
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        if (!response.ok) {
+          setComplaints([]);
+          return;
+        }
 
-      const data = (await response.json()) as Complaint[];
-      setComplaints(data);
+        const data = (await response.json()) as Complaint[];
+        setComplaints(data);
+      } catch (error) {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        console.error("Не удалось загрузить комментарии", error);
+        setComplaints([]);
+      }
     };
 
     void fetchComplaints();
+
+    return () => {
+      controller.abort();
+    };
   }, [project]);
 
   if (!project || !analysis) {
@@ -87,6 +105,8 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       const created = (await response.json()) as Complaint;
       setComplaints((prev) => [created, ...prev]);
       setDraft("");
+    } catch (error) {
+      console.error("Не удалось отправить комментарий", error);
     } finally {
       setIsSubmitting(false);
     }
