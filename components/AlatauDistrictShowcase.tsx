@@ -72,17 +72,17 @@ const districts: DistrictInfo[] = [
 const pathMap: Record<DistrictKey, string> = DISTRICT_PATHS;
 
 const pinMap: Record<DistrictKey, { x: number; y: number }> = {
-  green: { x: 318, y: 199 },
-  orange: { x: 265, y: 342 },
-  yellow: { x: 246, y: 512 },
-  blue: { x: 224, y: 661 },
+  green: { x: 260, y: 230 },
+  orange: { x: 230, y: 380 },
+  yellow: { x: 190, y: 540 },
+  blue: { x: 170, y: 661 },
 };
 
-const labelOffsetMap: Record<DistrictKey, { dx: number; dy: number }> = {
-  green: { dx: 0, dy: -29 },
-  orange: { dx: 0, dy: -42 },
-  yellow: { dx: -14, dy: -20 },
-  blue: { dx: 0, dy: -7 },
+const labelCenterMap: Record<DistrictKey, { x: number; y: number }> = {
+  green: { x: 260, y: 208 },
+  orange: { x: 230, y: 334 },
+  yellow: { x: 190, y: 510 },
+  blue: { x: 170, y: 639 },
 };
 
 export default function AlatauDistrictShowcase() {
@@ -113,9 +113,7 @@ export default function AlatauDistrictShowcase() {
             {districts.map((district) => {
               const isActive = district.key === active;
               const pin = pinMap[district.key];
-              const labelOffset = labelOffsetMap[district.key];
-              const labelX = pin.x + labelOffset.dx;
-              const labelY = pin.y + labelOffset.dy;
+              const labelCenter = labelCenterMap[district.key];
               return (
                 <g key={district.key} onClick={() => setActive(district.key)} className="cursor-pointer">
                   <path
@@ -129,8 +127,8 @@ export default function AlatauDistrictShowcase() {
 
                   {district.key === "green" && (
                     <text
-                      x={labelX}
-                      y={labelY}
+                      x={labelCenter.x}
+                      y={labelCenter.y}
                       fill="#ffffff"
                       fontSize="14"
                       fontWeight="600"
@@ -145,8 +143,8 @@ export default function AlatauDistrictShowcase() {
                   {district.key === "orange" && (
                     <>
                       <text
-                        x={labelX}
-                        y={labelY - 11}
+                        x={labelCenter.x}
+                        y={labelCenter.y - 11}
                         fill="#ffffff"
                         fontSize="14"
                         fontWeight="600"
@@ -156,8 +154,8 @@ export default function AlatauDistrictShowcase() {
                         Growing
                       </text>
                       <text
-                        x={labelX}
-                        y={labelY + 11}
+                        x={labelCenter.x}
+                        y={labelCenter.y + 11}
                         fill="#ffffff"
                         fontSize="14"
                         fontWeight="600"
@@ -172,8 +170,8 @@ export default function AlatauDistrictShowcase() {
                   {district.key === "yellow" && (
                     <>
                       <text
-                        x={labelX}
-                        y={labelY - 11}
+                        x={labelCenter.x}
+                        y={labelCenter.y - 11}
                         fill="#20395d"
                         fontSize="14"
                         fontWeight="500"
@@ -183,8 +181,8 @@ export default function AlatauDistrictShowcase() {
                         Golden
                       </text>
                       <text
-                        x={labelX}
-                        y={labelY + 11}
+                        x={labelCenter.x}
+                        y={labelCenter.y + 11}
                         fill="#20395d"
                         fontSize="14"
                         fontWeight="500"
@@ -198,8 +196,8 @@ export default function AlatauDistrictShowcase() {
 
                   {district.key === "blue" && (
                     <text
-                      x={labelX}
-                      y={labelY}
+                      x={labelCenter.x}
+                      y={labelCenter.y}
                       fill="#20395d"
                       fontSize="14"
                       fontWeight="500"
