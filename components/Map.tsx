@@ -176,6 +176,7 @@ export default function Map({ projects, selectedProjectId, onSelectProject }: Ma
   const [pan, setPan] = useState<PanOffset>({ x: 0, y: 0 });
   const [drag, setDrag] = useState<DragState | null>(null);
   const dragDistanceRef = useRef(0);
+  const suppressClickUntilRef = useRef(0);
 
   const markers = useMemo<ProjectMarker[]>(() => {
     const districtCounters: Record<DistrictKey, number> = {
@@ -240,6 +241,12 @@ export default function Map({ projects, selectedProjectId, onSelectProject }: Ma
   const onPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0) return;
     if (zoom <= MIN_ZOOM) return;
+
+    const target = event.target as Element | null;
+    if (target?.closest("[data-map-marker='true']")) {
+      return;
+    }
+
     event.currentTarget.setPointerCapture(event.pointerId);
     dragDistanceRef.current = 0;
     setDrag({
@@ -264,9 +271,14 @@ export default function Map({ projects, selectedProjectId, onSelectProject }: Ma
   };
 
   const onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    const wasDragging = dragDistanceRef.current > 6;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
+
+    // Suppress click immediately after drag-end to avoid accidental marker selection.
+    suppressClickUntilRef.current = wasDragging ? Date.now() + 180 : 0;
+    dragDistanceRef.current = 0;
     setDrag(null);
   };
 
@@ -375,12 +387,18 @@ export default function Map({ projects, selectedProjectId, onSelectProject }: Ma
           return (
             <g
               key={marker.id}
+              data-map-marker="true"
+              onPointerDown={(event) => {
+                event.stopPropagation();
+                dragDistanceRef.current = 0;
+              }}
               onClick={() => {
-                if (dragDistanceRef.current > 6) return;
+                if (Date.now() < suppressClickUntilRef.current) return;
                 onSelectProject(marker.id);
               }}
               className="cursor-pointer"
             >
+              <circle cx={marker.x} cy={marker.y} r={16} fill="transparent" />
               <circle cx={marker.x} cy={marker.y} r={12} fill="#ffffff" fillOpacity={0.95} stroke={color} strokeWidth={2.4} />
               {isActive && <circle cx={marker.x} cy={marker.y} r={16} fill="none" stroke="#0f172a" strokeWidth={1.9} />}
               <g transform={`translate(${marker.x}, ${marker.y}) scale(0.75)`}>
