@@ -153,6 +153,78 @@ const seedProjects: Project[] = [
     description: "Public school with sports and arts classrooms.",
     coordinates: { lat: 43.2701, lng: 76.9154 },
   },
+  {
+    id: "p-6",
+    name: "Growing STEM Academy",
+    district: "Growing District",
+    type: "school",
+    status: "in progress",
+    developerId: "dev-2",
+    developerName: "Skyline Nova",
+    description:
+      "A modern 1200-seat school campus with robotics labs, inclusive classrooms, a digital library, and safe pedestrian drop-off zones.",
+    coordinates: { lat: 43.2464, lng: 76.9528 },
+  },
+  {
+    id: "p-7",
+    name: "Golden Business Atrium",
+    district: "Golden District",
+    type: "commercial",
+    status: "in progress",
+    developerId: "dev-1",
+    developerName: "Alatau Build",
+    description:
+      "Mixed commercial center with office floors, local service units, underground parking, and energy-efficient facade systems for low operating costs.",
+    coordinates: { lat: 43.2558, lng: 76.9118 },
+  },
+  {
+    id: "p-8",
+    name: "Gate Transit Residences",
+    district: "Gate District",
+    type: "residential",
+    status: "planned",
+    developerId: "dev-2",
+    developerName: "Skyline Nova",
+    description:
+      "Transit-oriented residential quarter with family blocks, green courtyards, noise-shield solutions, and first-floor public amenities.",
+    coordinates: { lat: 43.2259, lng: 76.9694 },
+  },
+  {
+    id: "p-9",
+    name: "Green Care Neighborhood Center",
+    district: "Green District",
+    type: "commercial",
+    status: "planned",
+    developerId: "dev-1",
+    developerName: "Alatau Build",
+    description:
+      "Community-scale center focused on everyday services: pharmacy, diagnostics, childcare studios, and local retail within a walkable radius.",
+    coordinates: { lat: 43.2663, lng: 76.9019 },
+  },
+  {
+    id: "p-10",
+    name: "Growing Family Homes Phase II",
+    district: "Growing District",
+    type: "residential",
+    status: "in progress",
+    developerId: "dev-1",
+    developerName: "Alatau Build",
+    description:
+      "Second phase of mid-rise housing with daycare-ready courtyards, school bus pockets, barrier-free access, and district heating optimization.",
+    coordinates: { lat: 43.2411, lng: 76.9461 },
+  },
+  {
+    id: "p-11",
+    name: "Golden District Education Annex",
+    district: "Golden District",
+    type: "school",
+    status: "planned",
+    developerId: "dev-2",
+    developerName: "Skyline Nova",
+    description:
+      "Compact education annex designed for high-density business area workers' families, with after-school programs and protected walking routes.",
+    coordinates: { lat: 43.2514, lng: 76.9062 },
+  },
 ];
 
 const seedComplaints: Complaint[] = [
@@ -160,6 +232,36 @@ const seedComplaints: Complaint[] = [
     id: "c-1",
     projectId: "p-2",
     text: "Please improve noise management near nearby homes.",
+  },
+  {
+    id: "c-2",
+    projectId: "p-6",
+    text: "Great progress overall, but please add clearer temporary pedestrian signs near the school perimeter.",
+  },
+  {
+    id: "c-3",
+    projectId: "p-7",
+    text: "Evening logistics vehicles are blocking a local street, please adjust delivery windows.",
+  },
+  {
+    id: "c-4",
+    projectId: "p-8",
+    text: "Concern about peak-hour traffic load, request an updated transport impact report.",
+  },
+  {
+    id: "c-5",
+    projectId: "p-10",
+    text: "Construction team is responsive, but dust control on windy days should be stronger.",
+  },
+  {
+    id: "c-6",
+    projectId: "p-11",
+    text: "Support this school project, please keep safe crossing zones in final design.",
+  },
+  {
+    id: "c-7",
+    projectId: "p-9",
+    text: "Useful local services concept, but we need more public parking and bike racks.",
   },
 ];
 
@@ -235,6 +337,19 @@ async function prepareMongoIfNeeded() {
         createdAt: new Date(Date.now() - (seedProjects.length - index) * 1000),
       })),
     );
+  } else {
+    for (const project of seedProjects) {
+      await projectsCol.updateOne(
+        { id: project.id },
+        {
+          $setOnInsert: {
+            ...project,
+            createdAt: new Date(),
+          },
+        },
+        { upsert: true },
+      );
+    }
   }
 
   const complaintCount = await complaintsCol.countDocuments();
@@ -245,6 +360,19 @@ async function prepareMongoIfNeeded() {
         createdAt: new Date(Date.now() - (seedComplaints.length - index) * 1000),
       })),
     );
+  } else {
+    for (const complaint of seedComplaints) {
+      await complaintsCol.updateOne(
+        { id: complaint.id },
+        {
+          $setOnInsert: {
+            ...complaint,
+            createdAt: new Date(),
+          },
+        },
+        { upsert: true },
+      );
+    }
   }
 
   const userCount = await usersCol.countDocuments();
