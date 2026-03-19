@@ -6,6 +6,16 @@ import { useRole } from "@/components/RoleProvider";
 import { Project, ProjectStatus } from "@/lib/shared";
 
 const statuses: ProjectStatus[] = ["planned", "in progress", "completed"];
+const statusLabelMap: Record<ProjectStatus, string> = {
+  planned: "Запланировано",
+  "in progress": "В процессе",
+  completed: "Завершено",
+};
+const typeLabelMap: Record<Project["type"], string> = {
+  residential: "жилой",
+  school: "школа",
+  commercial: "коммерческий",
+};
 
 export default function DeveloperDashboardPage() {
   const { role, currentUser, isAuthenticated, isLoading } = useRole();
@@ -48,35 +58,35 @@ export default function DeveloperDashboardPage() {
       <header className="rounded-2xl border border-white/70 bg-white/90 p-5 shadow-lg">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Developer Panel</h1>
+            <h1 className="text-2xl font-bold">Панель подрядчика</h1>
             <p className="text-sm text-[color:var(--muted)]">
               {currentUser
-                ? `Logged in as ${currentUser.name}. Manage only your assigned projects.`
-                : "Login as a developer to manage your projects."}
+                ? `Вы вошли как ${currentUser.name}. Управляйте только назначенными вам проектами.`
+                : "Войдите как подрядчик, чтобы управлять проектами."}
             </p>
           </div>
           <Link href="/platform" className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white">
-            Back to Map
+            Назад к карте
           </Link>
         </div>
       </header>
 
       {isLoading ? (
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-700">
-          Checking session...
+          Проверяем сессию...
         </div>
       ) : !isAuthenticated ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
-          Please login first, then open this panel.
+          Сначала войдите в аккаунт, затем откройте эту панель.
         </div>
       ) : role !== "developer" ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
-          Your account is not a developer account.
+          Ваш аккаунт не имеет роли подрядчика.
         </div>
       ) : (
         <section className="space-y-3">
           {assignedProjects.length === 0 && (
-            <div className="rounded-2xl border border-white/70 bg-white/90 p-4 shadow">No assigned projects.</div>
+            <div className="rounded-2xl border border-white/70 bg-white/90 p-4 shadow">У вас пока нет назначенных проектов.</div>
           )}
 
           {assignedProjects.map((project) => (
@@ -85,7 +95,7 @@ export default function DeveloperDashboardPage() {
                 <div>
                   <h2 className="text-lg font-semibold">{project.name}</h2>
                   <p className="text-sm text-[color:var(--muted)]">
-                    {project.district} · {project.type}
+                    {project.district} · {typeLabelMap[project.type]}
                   </p>
                 </div>
                 <select
@@ -97,7 +107,7 @@ export default function DeveloperDashboardPage() {
                 >
                   {statuses.map((status) => (
                     <option key={status} value={status}>
-                      {status}
+                      {statusLabelMap[status]}
                     </option>
                   ))}
                 </select>

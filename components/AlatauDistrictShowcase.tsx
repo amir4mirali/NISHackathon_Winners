@@ -151,7 +151,7 @@ export default function AlatauDistrictShowcase() {
                         textAnchor="middle"
                         style={{ pointerEvents: "none" }}
                       >
-                        Growing
+                          Growing
                       </text>
                       <text
                         x={labelCenter.x}
@@ -162,7 +162,7 @@ export default function AlatauDistrictShowcase() {
                         textAnchor="middle"
                         style={{ pointerEvents: "none" }}
                       >
-                        District
+                          District
                       </text>
                     </>
                   )}
@@ -178,7 +178,7 @@ export default function AlatauDistrictShowcase() {
                         textAnchor="middle"
                         style={{ pointerEvents: "none" }}
                       >
-                        Golden
+                          Golden
                       </text>
                       <text
                         x={labelCenter.x}
@@ -189,7 +189,7 @@ export default function AlatauDistrictShowcase() {
                         textAnchor="middle"
                         style={{ pointerEvents: "none" }}
                       >
-                        District
+                          District
                       </text>
                     </>
                   )}

@@ -19,6 +19,11 @@ export default function PlatformPage() {
   const { role, currentUser, isAuthenticated, isLoading, logout } = useRole();
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const roleLabelMap: Record<typeof role, string> = {
+    resident: "Житель",
+    developer: "Подрядчик",
+    admin: "Администратор",
+  };
 
   const selectedProject = useMemo(
     () => projects.find((project) => project.id === selectedProjectId) ?? null,
@@ -48,11 +53,11 @@ export default function PlatformPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-              Alatau City Construction Transparency Platform
+              Платформа прозрачного строительства Alatau City
             </h1>
             <p className="text-sm text-[color:var(--muted)]">
-              Active role: <span className="font-semibold capitalize">{role}</span>
-              {currentUser ? ` (${currentUser.name})` : " (guest mode)"}
+              Активная роль: <span className="font-semibold">{roleLabelMap[role]}</span>
+              {currentUser ? ` (${currentUser.name})` : " (гостевой режим)"}
             </p>
           </div>
 
@@ -62,52 +67,52 @@ export default function PlatformPage() {
                 href="/login"
                 className="rounded-full bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-white"
               >
-                Login
+                Войти
               </Link>
             ) : (
               <button
                 onClick={() => void logout()}
                 className="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200"
               >
-                Logout
+                Выйти
               </button>
             )}
           </div>
         </div>
 
         {isLoading && (
-          <p className="mt-3 text-sm text-[color:var(--muted)]">Checking session...</p>
+          <p className="mt-3 text-sm text-[color:var(--muted)]">Проверяем сессию...</p>
         )}
 
         {!isLoading && !isAuthenticated && (
           <p className="mt-3 text-sm text-amber-700">
-            You are browsing in guest mode. Login to access role-protected actions.
+            Вы в гостевом режиме. Войдите, чтобы использовать действия с ограничением по ролям.
           </p>
         )}
 
         <div className="mt-4 flex flex-wrap items-center gap-3 text-sm">
-          <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-700">Green: completed</span>
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-700">Yellow: in progress</span>
-          <span className="rounded-full bg-red-100 px-3 py-1 text-red-700">Red: planned</span>
+          <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-700">Зеленый: завершено</span>
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-700">Желтый: в процессе</span>
+          <span className="rounded-full bg-red-100 px-3 py-1 text-red-700">Красный: запланировано</span>
           <Link href="/" className="ml-auto rounded-lg border border-slate-200 bg-white px-3 py-2 font-semibold text-slate-800">
-            Welcome
+            Главная
           </Link>
           {!isAuthenticated && (
             <Link
               href="/register"
               className="rounded-lg border border-slate-200 bg-white px-3 py-2 font-semibold text-slate-800"
             >
-              Register
+              Регистрация
             </Link>
           )}
           {isAuthenticated && role === "developer" && (
             <Link href="/dashboard/developer" className="rounded-lg bg-slate-900 px-3 py-2 font-semibold text-white">
-              Developer Panel
+              Панель подрядчика
             </Link>
           )}
           {isAuthenticated && role === "admin" && (
             <Link href="/dashboard/admin" className="rounded-lg bg-[color:var(--accent)] px-3 py-2 font-semibold text-white">
-              Admin Panel
+              Панель администратора
             </Link>
           )}
         </div>

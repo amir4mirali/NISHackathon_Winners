@@ -449,22 +449,22 @@ export async function registerResident(
   const normalizedEmail = normalizeEmail(email);
 
   if (!normalizedName) {
-    return { user: null, error: "Name is required" };
+    return { user: null, error: "Имя обязательно" };
   }
 
   if (!normalizedEmail || !normalizedEmail.includes("@")) {
-    return { user: null, error: "Valid email is required" };
+    return { user: null, error: "Укажите корректную почту" };
   }
 
   if (password.length < 6) {
-    return { user: null, error: "Password must be at least 6 characters" };
+    return { user: null, error: "Пароль должен содержать минимум 6 символов" };
   }
 
   const db = await getMongoDb();
   if (!db) {
     const exists = authUsers.some((entry) => entry.email.toLowerCase() === normalizedEmail);
     if (exists) {
-      return { user: null, error: "User with this email already exists" };
+      return { user: null, error: "Пользователь с такой почтой уже существует" };
     }
 
     const newUser: AuthUser & { passwordHash: string } = {
@@ -483,7 +483,7 @@ export async function registerResident(
   const usersCol = db.collection<AuthUserDocument>("users");
   const exists = await usersCol.findOne({ email: normalizedEmail }, { projection: { _id: 1 } });
   if (exists) {
-    return { user: null, error: "User with this email already exists" };
+    return { user: null, error: "Пользователь с такой почтой уже существует" };
   }
 
   const newUser: AuthUserDocument = {

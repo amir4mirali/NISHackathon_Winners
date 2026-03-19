@@ -36,6 +36,16 @@ const defaultForm: FormState = {
 
 const projectTypes: ProjectType[] = ["residential", "school", "commercial"];
 const statuses: ProjectStatus[] = ["planned", "in progress", "completed"];
+const typeLabelMap: Record<ProjectType, string> = {
+  residential: "жилой",
+  school: "школа",
+  commercial: "коммерческий",
+};
+const statusLabelMap: Record<ProjectStatus, string> = {
+  planned: "запланировано",
+  "in progress": "в процессе",
+  completed: "завершено",
+};
 
 export default function AdminDashboardPage() {
   const { role, isAuthenticated, isLoading } = useRole();
@@ -123,34 +133,34 @@ export default function AdminDashboardPage() {
       <header className="rounded-2xl border border-white/70 bg-white/90 p-5 shadow-lg">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold">Admin Panel</h1>
+            <h1 className="text-2xl font-bold">Панель администратора</h1>
             <p className="text-sm text-[color:var(--muted)]">
-              Create, assign, edit, and delete construction projects.
+              Создавайте, назначайте, редактируйте и удаляйте строительные проекты.
             </p>
           </div>
           <Link href="/platform" className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white">
-            Back to Map
+            Назад к карте
           </Link>
         </div>
       </header>
 
       {isLoading ? (
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-slate-700">
-          Checking session...
+          Проверяем сессию...
         </div>
       ) : !isAuthenticated ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
-          Please login first, then open this panel.
+          Сначала войдите в аккаунт, затем откройте эту панель.
         </div>
       ) : role !== "admin" ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
-          Your account is not an admin account.
+          Ваш аккаунт не имеет роли администратора.
         </div>
       ) : (
         <>
           <section className="rounded-2xl border border-white/70 bg-white/95 p-5 shadow">
             <h2 className="mb-4 text-lg font-semibold">
-              {editingId ? "Edit Project" : "Create New Project"}
+              {editingId ? "Редактирование проекта" : "Создание нового проекта"}
             </h2>
 
             <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -158,7 +168,7 @@ export default function AdminDashboardPage() {
                 required
                 value={form.name}
                 onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-                placeholder="Project name"
+                placeholder="Название проекта"
                 className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[color:var(--accent)]/30"
               />
               <input
@@ -167,7 +177,7 @@ export default function AdminDashboardPage() {
                 onChange={(event) =>
                   setForm((prev) => ({ ...prev, description: event.target.value }))
                 }
-                placeholder="Short description"
+                placeholder="Краткое описание"
                 className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[color:var(--accent)]/30"
               />
 
@@ -194,7 +204,7 @@ export default function AdminDashboardPage() {
               >
                 {projectTypes.map((type) => (
                   <option key={type} value={type}>
-                    {type}
+                    {typeLabelMap[type]}
                   </option>
                 ))}
               </select>
@@ -208,7 +218,7 @@ export default function AdminDashboardPage() {
               >
                 {statuses.map((status) => (
                   <option key={status} value={status}>
-                    {status}
+                    {statusLabelMap[status]}
                   </option>
                 ))}
               </select>
@@ -231,14 +241,14 @@ export default function AdminDashboardPage() {
                 required
                 value={form.lat}
                 onChange={(event) => setForm((prev) => ({ ...prev, lat: event.target.value }))}
-                placeholder="Latitude"
+                placeholder="Широта"
                 className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[color:var(--accent)]/30"
               />
               <input
                 required
                 value={form.lng}
                 onChange={(event) => setForm((prev) => ({ ...prev, lng: event.target.value }))}
-                placeholder="Longitude"
+                placeholder="Долгота"
                 className="rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[color:var(--accent)]/30"
               />
 
@@ -247,7 +257,7 @@ export default function AdminDashboardPage() {
                   type="submit"
                   className="rounded-lg bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-white"
                 >
-                  {editingId ? "Save changes" : "Create project"}
+                  {editingId ? "Сохранить изменения" : "Создать проект"}
                 </button>
                 {editingId && (
                   <button
@@ -258,7 +268,7 @@ export default function AdminDashboardPage() {
                     }}
                     className="rounded-lg bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-700"
                   >
-                    Cancel edit
+                    Отменить редактирование
                   </button>
                 )}
               </div>
@@ -272,7 +282,7 @@ export default function AdminDashboardPage() {
                   <div>
                     <h3 className="text-lg font-semibold">{project.name}</h3>
                     <p className="text-sm text-[color:var(--muted)]">
-                      {project.district} · {project.type} · {project.status} · {project.developerName}
+                      {project.district} · {typeLabelMap[project.type]} · {statusLabelMap[project.status]} · {project.developerName}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -280,13 +290,13 @@ export default function AdminDashboardPage() {
                       onClick={() => editProject(project)}
                       className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white"
                     >
-                      Edit
+                      Редактировать
                     </button>
                     <button
                       onClick={() => removeProject(project.id)}
                       className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white"
                     >
-                      Delete
+                      Удалить
                     </button>
                   </div>
                 </div>

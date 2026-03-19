@@ -48,7 +48,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     };
 
     if (!response.ok || !payload.user) {
-      return { ok: false, error: payload.error ?? "Login failed" };
+      return { ok: false, error: payload.error ?? "Не удалось выполнить вход" };
     }
 
     setCurrentUser(payload.user);
@@ -79,7 +79,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
 export function useRole() {
   const context = useContext(RoleContext);
   if (!context) {
-    throw new Error("useRole must be used inside RoleProvider");
+    throw new Error("useRole должен использоваться внутри RoleProvider");
   }
   return context;
 }

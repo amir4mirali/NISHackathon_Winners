@@ -15,6 +15,18 @@ const statusBadgeClasses: Record<Project["status"], string> = {
   planned: "bg-red-100 text-red-700",
 };
 
+const statusLabelMap: Record<Project["status"], string> = {
+  completed: "завершено",
+  "in progress": "в процессе",
+  planned: "запланировано",
+};
+
+const typeLabelMap: Record<Project["type"], string> = {
+  residential: "жилой",
+  school: "школа",
+  commercial: "коммерческий",
+};
+
 export default function ProjectCard({ project }: ProjectCardProps) {
   const { role, isAuthenticated } = useRole();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
@@ -50,7 +62,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     return (
       <aside className="rounded-2xl border border-white/60 bg-white/90 p-5 shadow-lg">
         <p className="text-sm text-[color:var(--muted)]">
-          Select a marker on the map to see construction details and AI analysis.
+          Выберите маркер на карте, чтобы увидеть детали проекта и AI-анализ.
         </p>
       </aside>
     );
@@ -69,7 +81,7 @@ export default function ProjectCard({ project }: ProjectCardProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Could not save complaint");
+        throw new Error("Не удалось сохранить комментарий");
       }
 
       const created = (await response.json()) as Complaint;
@@ -88,37 +100,37 @@ export default function ProjectCard({ project }: ProjectCardProps) {
           <p className="text-sm text-[color:var(--muted)]">{project.district}</p>
         </div>
         <span className={`rounded-full px-3 py-1 text-xs font-semibold ${statusBadgeClasses[project.status]}`}>
-          {project.status}
+          {statusLabelMap[project.status]}
         </span>
       </div>
 
       <div className="grid grid-cols-2 gap-2 text-sm">
         <p>
-          <span className="font-semibold">Type:</span> {project.type}
+          <span className="font-semibold">Тип:</span> {typeLabelMap[project.type]}
         </p>
         <p>
-          <span className="font-semibold">Developer:</span> {project.developerName}
+          <span className="font-semibold">Подрядчик:</span> {project.developerName}
         </p>
       </div>
 
       <p className="text-sm leading-6 text-[color:var(--foreground)]/80">{project.description}</p>
 
       <div className="rounded-xl bg-[color:var(--accent-soft)] p-4">
-        <h3 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--accent)]">AI analysis</h3>
+        <h3 className="text-sm font-semibold uppercase tracking-wide text-[color:var(--accent)]">AI-анализ</h3>
         <p className="mt-2 text-sm">
-          Score: <span className="font-bold">{analysis.score}/10</span> · {analysis.recommendation}
+          Оценка: <span className="font-bold">{analysis.score}/10</span> · {analysis.recommendation}
         </p>
         <p className="mt-1 text-sm text-[color:var(--foreground)]/75">{analysis.explanation}</p>
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold uppercase tracking-wide">Resident comments</h3>
+        <h3 className="text-sm font-semibold uppercase tracking-wide">Комментарии жителей</h3>
         {isAuthenticated && role === "resident" && (
           <form onSubmit={submitComplaint} className="space-y-2">
             <textarea
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              placeholder="Leave a complaint or comment"
+              placeholder="Оставьте жалобу или комментарий"
               className="min-h-20 w-full rounded-xl border border-slate-200 bg-white p-3 text-sm outline-none focus:ring-2 focus:ring-[color:var(--accent)]/30"
             />
             <button
@@ -126,14 +138,14 @@ export default function ProjectCard({ project }: ProjectCardProps) {
               disabled={isSubmitting}
               className="rounded-lg bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-60"
             >
-              {isSubmitting ? "Saving..." : "Submit comment"}
+              {isSubmitting ? "Сохраняем..." : "Отправить комментарий"}
             </button>
           </form>
         )}
 
         <ul className="space-y-2">
           {complaints.length === 0 && (
-            <li className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">No comments yet.</li>
+            <li className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">Комментариев пока нет.</li>
           )}
           {complaints.map((complaint) => (
             <li key={complaint.id} className="rounded-lg bg-slate-50 p-3 text-sm text-slate-700">

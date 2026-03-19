@@ -14,8 +14,8 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Alatau City Construction Transparency Platform",
-  description: "Hackathon MVP for city construction transparency",
+  title: "Платформа прозрачного строительства Alatau City",
+  description: "Хакатон MVP для прозрачного управления городским строительством",
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="ru"
       className={`${manrope.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">

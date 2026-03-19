@@ -27,7 +27,7 @@ export default function RegisterPage() {
     setSubmitting(false);
 
     if (!response.ok) {
-      setError(payload.error ?? "Registration failed");
+      setError(payload.error ?? "Не удалось зарегистрироваться");
       return;
     }
 
@@ -37,9 +37,9 @@ export default function RegisterPage() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 md:px-8">
       <header className="rounded-2xl border border-white/70 bg-white/90 p-5 shadow-lg">
-        <h1 className="text-2xl font-bold">Create Resident Account</h1>
+        <h1 className="text-2xl font-bold">Создание аккаунта жителя</h1>
         <p className="mt-2 text-sm text-[color:var(--muted)]">
-          Registration creates a resident account and signs you in automatically.
+          Регистрация создаст аккаунт жителя и автоматически выполнит вход.
         </p>
       </header>
 
@@ -49,7 +49,7 @@ export default function RegisterPage() {
             required
             value={name}
             onChange={(event) => setName(event.target.value)}
-            placeholder="Full name"
+            placeholder="Полное имя"
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[color:var(--accent)]/30"
           />
           <input
@@ -57,7 +57,7 @@ export default function RegisterPage() {
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="Email"
+            placeholder="Почта"
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[color:var(--accent)]/30"
           />
           <input
@@ -66,7 +66,7 @@ export default function RegisterPage() {
             minLength={6}
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="Password (min 6 chars)"
+            placeholder="Пароль (минимум 6 символов)"
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[color:var(--accent)]/30"
           />
 
@@ -77,7 +77,7 @@ export default function RegisterPage() {
             disabled={submitting}
             className="w-full rounded-lg bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
-            {submitting ? "Creating account..." : "Register"}
+            {submitting ? "Создаем аккаунт..." : "Зарегистрироваться"}
           </button>
         </form>
 
@@ -86,13 +86,13 @@ export default function RegisterPage() {
             href="/login"
             className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white"
           >
-            Already have account? Login
+            Уже есть аккаунт? Войти
           </Link>
           <Link
             href="/"
             className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
           >
-            Home
+            Главная
           </Link>
         </div>
       </section>

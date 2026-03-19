@@ -12,9 +12,9 @@ type DemoAccount = {
 };
 
 const demoAccounts: DemoAccount[] = [
-  { role: "Resident", email: "resident@alatau.local", password: "resident123" },
-  { role: "Developer", email: "developer1@alatau.local", password: "developer123" },
-  { role: "Admin", email: "admin@alatau.local", password: "admin123" },
+  { role: "Житель", email: "resident@alatau.local", password: "resident123" },
+  { role: "Подрядчик", email: "developer1@alatau.local", password: "developer123" },
+  { role: "Администратор", email: "admin@alatau.local", password: "admin123" },
 ];
 
 export default function LoginPage() {
@@ -26,11 +26,17 @@ export default function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
 
   const statusText = useMemo(() => {
-    if (isLoading) return "Checking session...";
+    const roleLabels = {
+      resident: "Житель",
+      developer: "Подрядчик",
+      admin: "Администратор",
+    };
+
+    if (isLoading) return "Проверяем сессию...";
     if (isAuthenticated && currentUser) {
-      return `Logged in as ${currentUser.name} (${currentUser.role})`;
+      return `Вы вошли как ${currentUser.name} (${roleLabels[currentUser.role]})`;
     }
-    return "Not logged in";
+    return "Вы не вошли в систему";
   }, [isAuthenticated, currentUser, isLoading]);
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -42,7 +48,7 @@ export default function LoginPage() {
     setSubmitting(false);
 
     if (!result.ok) {
-      setError(result.error ?? "Login failed");
+      setError(result.error ?? "Не удалось выполнить вход");
       return;
     }
 
@@ -52,9 +58,9 @@ export default function LoginPage() {
   return (
     <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8 md:px-8">
       <header className="rounded-2xl border border-white/70 bg-white/90 p-5 shadow-lg">
-        <h1 className="text-2xl font-bold">Sign In</h1>
+        <h1 className="text-2xl font-bold">Вход</h1>
         <p className="mt-2 text-sm text-[color:var(--muted)]">
-          Use one of the demo accounts or your seeded Mongo user credentials.
+          Используйте один из демо-аккаунтов или свои учетные данные из Mongo.
         </p>
         <p className="mt-3 text-sm font-medium text-slate-700">{statusText}</p>
       </header>
@@ -66,7 +72,7 @@ export default function LoginPage() {
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="Email"
+            placeholder="Почта"
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[color:var(--accent)]/30"
           />
           <input
@@ -74,7 +80,7 @@ export default function LoginPage() {
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            placeholder="Password"
+            placeholder="Пароль"
             className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[color:var(--accent)]/30"
           />
 
@@ -85,12 +91,12 @@ export default function LoginPage() {
             disabled={submitting}
             className="w-full rounded-lg bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
           >
-            {submitting ? "Signing in..." : "Sign in"}
+            {submitting ? "Входим..." : "Войти"}
           </button>
         </form>
 
         <div className="mt-4 rounded-xl bg-slate-50 p-3 text-sm">
-          <p className="font-semibold">Demo credentials</p>
+          <p className="font-semibold">Демо-аккаунты</p>
           <ul className="mt-2 space-y-1 text-slate-700">
             {demoAccounts.map((account) => (
               <li key={account.email}>
@@ -105,19 +111,19 @@ export default function LoginPage() {
             href="/register"
             className="rounded-lg bg-[color:var(--accent)] px-3 py-2 text-sm font-semibold text-white"
           >
-            Register
+            Регистрация
           </Link>
           <Link
             href="/platform"
             className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white"
           >
-            Back to Platform
+            На платформу
           </Link>
           <Link
             href="/"
             className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700"
           >
-            Home
+            Главная
           </Link>
         </div>
       </section>

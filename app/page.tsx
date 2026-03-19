@@ -16,15 +16,15 @@ export default function Home() {
         <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-[1.25fr_1fr] lg:items-center">
           <div>
             <p className="mb-3 inline-flex rounded-full bg-[color:var(--accent-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[color:var(--accent)]">
-              Hackathon MVP
+              MVP хакатона
             </p>
             <h1 className="text-4xl font-bold leading-tight tracking-tight md:text-6xl">
               Alatau City
               <br />
-              Transparency Platform
+              Платформа прозрачности
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[color:var(--muted)] md:text-lg">
-              Добро пожаловать. Здесь жители, девелоперы и администрация видят строительство по дистриктам,
+              Добро пожаловать. Здесь жители, подрядчики и администрация видят строительство по дистриктам,
               статусы объектов и AI-рекомендации по развитию территорий Алатау.
             </p>
 
@@ -35,13 +35,13 @@ export default function Home() {
                     href="/login"
                     className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:brightness-95"
                   >
-                    Login
+                    Войти
                   </Link>
                   <Link
                     href="/register"
                     className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                   >
-                    Register
+                    Регистрация
                   </Link>
                 </>
               ) : null}
@@ -56,7 +56,7 @@ export default function Home() {
                   href="/dashboard/admin"
                   className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                 >
-                  Admin Panel
+                  Панель администратора
                 </Link>
               )}
               {isAuthenticated && role === "developer" && (
@@ -64,7 +64,7 @@ export default function Home() {
                   href="/dashboard/developer"
                   className="rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50"
                 >
-                  Developer Panel
+                  Панель подрядчика
                 </Link>
               )}
             </div>
@@ -75,7 +75,7 @@ export default function Home() {
             <ul className="mt-4 space-y-3 text-sm text-[color:var(--foreground)]/80">
               <li className="rounded-lg bg-slate-50 px-3 py-2">Карта дистриктов и объекты строительства</li>
               <li className="rounded-lg bg-slate-50 px-3 py-2">Карточка объекта + AI анализ</li>
-              <li className="rounded-lg bg-slate-50 px-3 py-2">Роли: Resident / Developer / Admin</li>
+              <li className="rounded-lg bg-slate-50 px-3 py-2">Роли: Житель / Подрядчик / Администратор</li>
               <li className="rounded-lg bg-slate-50 px-3 py-2">Комментарии жителей и управление проектами</li>
             </ul>
 

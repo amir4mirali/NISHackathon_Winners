@@ -13,21 +13,25 @@ type MapProps = {
 const districtZones = [
   {
     name: "Green District",
+    label: "Green District",
     center: [43.264, 76.898] as [number, number],
     color: "#1f9d55",
   },
   {
     name: "Growing District",
+    label: "Growing District",
     center: [43.238, 76.947] as [number, number],
     color: "#e9b949",
   },
   {
     name: "Golden District",
+    label: "Golden District",
     center: [43.247, 76.91] as [number, number],
     color: "#f08c00",
   },
   {
     name: "Gate District",
+    label: "Gate District",
     center: [43.221, 76.973] as [number, number],
     color: "#d64545",
   },
@@ -59,7 +63,7 @@ export default function Map({ projects, selectedProjectId, onSelectProject }: Ma
           pathOptions={{ color: zone.color, fillOpacity: 0.08 }}
         >
           <Tooltip direction="top" sticky>
-            {zone.name}
+            {zone.label}
           </Tooltip>
         </Circle>
       ))}

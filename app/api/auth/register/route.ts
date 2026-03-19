@@ -13,14 +13,14 @@ export async function POST(request: Request) {
 
   if (!body.name || !body.email || !body.password) {
     return NextResponse.json(
-      { error: "name, email and password are required" },
+      { error: "Укажите имя, почту и пароль" },
       { status: 400 },
     );
   }
 
   const result = await registerResident(body.name, body.email, body.password);
   if (!result.user) {
-    return NextResponse.json({ error: result.error ?? "Registration failed" }, { status: 400 });
+    return NextResponse.json({ error: result.error ?? "Ошибка регистрации" }, { status: 400 });
   }
 
   const response = NextResponse.json({ user: result.user }, { status: 201 });

@@ -11,12 +11,12 @@ export async function POST(request: Request) {
   const body = (await request.json()) as LoginBody;
 
   if (!body.email || !body.password) {
-    return NextResponse.json({ error: "email and password are required" }, { status: 400 });
+    return NextResponse.json({ error: "Укажите почту и пароль" }, { status: 400 });
   }
 
   const user = await authenticateUser(body.email, body.password);
   if (!user) {
-    return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    return NextResponse.json({ error: "Неверная почта или пароль" }, { status: 401 });
   }
 
   const response = NextResponse.json({
