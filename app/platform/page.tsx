@@ -125,7 +125,7 @@ export default function PlatformPage() {
             selectedProjectId={selectedProjectId}
             onSelectProject={setSelectedProjectId}
           />
-          {role === "resident" && <AIBox />}
+          {role === "resident" && <AIBox projects={projects} />}
         </div>
         <ProjectCard project={selectedProject} />
       </section>

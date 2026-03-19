@@ -15,9 +15,6 @@ export default function Home() {
 
         <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-[1.25fr_1fr] lg:items-center">
           <div>
-            <p className="mb-3 inline-flex rounded-full bg-[color:var(--accent-soft)] px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[color:var(--accent)]">
-              MVP хакатона
-            </p>
             <h1 className="text-4xl font-bold leading-tight tracking-tight md:text-6xl">
               Alatau City
               <br />
