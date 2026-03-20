@@ -22,6 +22,7 @@ export type Project = {
   district: District;
   type: ProjectType;
   status: ProjectStatus;
+  acceptanceRequested?: boolean;
   developerId: string;
   developerName: string;
   description: string;
@@ -286,6 +287,7 @@ const toProject = (doc: ProjectDocument): Project => ({
   district: doc.district,
   type: doc.type,
   status: doc.status,
+  acceptanceRequested: doc.acceptanceRequested ?? false,
   developerId: doc.developerId,
   developerName: doc.developerName,
   description: doc.description,
@@ -421,6 +423,7 @@ export async function createProject(input: Omit<Project, "id" | "developerName">
   const project: Project = {
     ...input,
     id: nextId("p"),
+    acceptanceRequested: input.acceptanceRequested ?? false,
     developerName: developer?.name ?? "Unknown Developer",
   };
 

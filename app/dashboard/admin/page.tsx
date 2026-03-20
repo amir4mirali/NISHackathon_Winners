@@ -147,6 +147,11 @@ export default function AdminDashboardPage() {
     [projects, urbanTargetType, strictZoning],
   );
 
+  const pendingAcceptanceProjects = useMemo(
+    () => projects.filter((project) => project.acceptanceRequested),
+    [projects],
+  );
+
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -204,6 +209,29 @@ export default function AdminDashboardPage() {
   const removeProject = async (projectId: string) => {
     await fetch(`/api/projects/${projectId}`, { method: "DELETE" });
     await refreshData();
+  };
+
+  const reviewAcceptance = async (projectId: string, approved: boolean) => {
+    await fetch(`/api/projects/${projectId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        acceptanceRequested: false,
+        status: approved ? "completed" : "in progress",
+      }),
+    });
+
+    setProjects((prev) =>
+      prev.map((project) =>
+        project.id === projectId
+          ? {
+              ...project,
+              acceptanceRequested: false,
+              status: approved ? "completed" : "in progress",
+            }
+          : project,
+      ),
+    );
   };
 
   return (
@@ -265,6 +293,50 @@ export default function AdminDashboardPage() {
 
           {workspace === "projects" && (
             <>
+              <section className="rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <h2 className="text-base font-semibold text-amber-900">Проверка выполненных работ</h2>
+                  <span className="rounded-full bg-amber-200 px-2 py-0.5 text-xs font-semibold text-amber-900">
+                    {pendingAcceptanceProjects.length} ожидает приемки
+                  </span>
+                </div>
+
+                {pendingAcceptanceProjects.length === 0 ? (
+                  <p className="text-sm text-amber-900/80">Новых заявок от подрядчиков на приемку пока нет.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {pendingAcceptanceProjects.map((project) => (
+                      <article key={project.id} className="rounded-xl border border-amber-200 bg-white p-3">
+                        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                          <div>
+                            <p className="text-sm font-semibold">{project.name}</p>
+                            <p className="text-xs text-slate-600">
+                              {project.district} · {project.developerName} · {typeLabelMap[project.type]}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => reviewAcceptance(project.id, true)}
+                              className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white"
+                            >
+                              Принять проект
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => reviewAcceptance(project.id, false)}
+                              className="rounded-lg bg-slate-700 px-3 py-2 text-xs font-semibold text-white"
+                            >
+                              Вернуть в работу
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </section>
+
               <section
                 ref={formSectionRef}
                 className={`rounded-2xl border bg-white/95 p-5 shadow ${
@@ -416,6 +488,11 @@ export default function AdminDashboardPage() {
                           <p className="text-sm text-[color:var(--muted)]">
                             {project.district} · {typeLabelMap[project.type]} · {statusLabelMap[project.status]} · {project.developerName}
                           </p>
+                          {project.acceptanceRequested && (
+                            <p className="mt-1 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                              Ожидает приемки администратором
+                            </p>
+                          )}
                         </div>
                         <div className="flex gap-2">
                           <button

@@ -19,6 +19,7 @@ export type Project = {
   district: District;
   type: ProjectType;
   status: ProjectStatus;
+  acceptanceRequested?: boolean;
   developerId: string;
   developerName: string;
   description: string;

@@ -45,11 +45,29 @@ export default function DeveloperDashboardPage() {
     await fetch(`/api/projects/${projectId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({ status, acceptanceRequested: false }),
     });
 
     setProjects((prev) =>
-      prev.map((project) => (project.id === projectId ? { ...project, status } : project)),
+      prev.map((project) =>
+        project.id === projectId ? { ...project, status, acceptanceRequested: false } : project,
+      ),
+    );
+  };
+
+  const submitForAcceptance = async (projectId: string) => {
+    await fetch(`/api/projects/${projectId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "completed", acceptanceRequested: true }),
+    });
+
+    setProjects((prev) =>
+      prev.map((project) =>
+        project.id === projectId
+          ? { ...project, status: "completed", acceptanceRequested: true }
+          : project,
+      ),
     );
   };
 
@@ -97,20 +115,35 @@ export default function DeveloperDashboardPage() {
                   <p className="text-sm text-[color:var(--muted)]">
                     {project.district} · {typeLabelMap[project.type]}
                   </p>
+                  {project.acceptanceRequested && (
+                    <p className="mt-1 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">
+                      Отправлено на приемку администратору
+                    </p>
+                  )}
                 </div>
-                <select
-                  value={project.status}
-                  onChange={(event) =>
-                    updateStatus(project.id, event.target.value as ProjectStatus)
-                  }
-                  className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[color:var(--accent)]/30"
-                >
-                  {statuses.map((status) => (
-                    <option key={status} value={status}>
-                      {statusLabelMap[status]}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    value={project.status}
+                    onChange={(event) =>
+                      updateStatus(project.id, event.target.value as ProjectStatus)
+                    }
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[color:var(--accent)]/30"
+                  >
+                    {statuses.map((status) => (
+                      <option key={status} value={status}>
+                        {statusLabelMap[status]}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    disabled={project.acceptanceRequested}
+                    onClick={() => submitForAcceptance(project.id)}
+                    className="rounded-lg bg-[color:var(--accent)] px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    {project.acceptanceRequested ? "На проверке" : "Сдать на проверку"}
+                  </button>
+                </div>
               </div>
             </article>
           ))}
